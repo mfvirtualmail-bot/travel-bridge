@@ -11,6 +11,9 @@ bridge solves that **without ever touching the filter** — your device stays
 100% filtered the whole time. See **[docs/HOW-IT-WORKS.md](docs/HOW-IT-WORKS.md)**
 for the plain-language explanation.
 
+**🌐 Visual overview / how it works:** https://mfvirtualmail-bot.github.io/travel-bridge/
+*(live once GitHub Pages is enabled — see below).*
+
 > **What it does / does NOT do**
 > - ✅ Passes the WiFi **login page** on behalf of your device.
 > - ✅ Your device's **filter keeps filtering every byte**, unchanged.

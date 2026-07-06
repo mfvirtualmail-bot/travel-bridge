@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>travel-bridge — public WiFi for a filtered device, without touching the filter</title>
+<meta name="description" content="Turn a Raspberry Pi into a travel router that passes the WiFi login page so a filtered device can use public/airport WiFi — while the filter stays 100% on.">
+<style>
+  :root{
+    --bg:#f5f7fb; --panel:#ffffff; --ink:#141a22; --mut:#5a6675; --line:#e2e8f2;
+    --blue:#1565c0; --blue2:#1e88e5; --green:#2e7d32; --red:#c62828; --amber:#ef6c00;
+    --shadow:0 1px 2px rgba(16,24,40,.06),0 8px 24px rgba(16,24,40,.06);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#0d1117; --panel:#161b22; --ink:#e6edf3; --mut:#9aa7b6; --line:#232b36;
+      --blue:#4a9eff; --blue2:#5fb0ff; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.35); }
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  a{color:var(--blue);text-decoration:none} a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 20px}
+
+  header.hero{background:linear-gradient(120deg,var(--blue),var(--blue2));color:#fff;padding:64px 0 56px}
+  .hero h1{margin:0 0 6px;font-size:2.5rem;letter-spacing:-.5px}
+  .hero .tag{font-size:1.2rem;opacity:.95;margin:0 0 22px;max-width:640px}
+  .badges{display:flex;flex-wrap:wrap;gap:10px}
+  .badge{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);
+    padding:6px 12px;border-radius:999px;font-size:.9rem}
+  .cta{display:inline-block;margin-top:24px;background:#fff;color:var(--blue);
+    font-weight:700;padding:11px 20px;border-radius:10px}
+
+  section{padding:44px 0}
+  h2{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.3px}
+  .lead{color:var(--mut);margin:0 0 26px;max-width:720px}
+
+  /* flow diagram */
+  .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
+  .node{flex:1 1 220px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:20px;box-shadow:var(--shadow);position:relative}
+  .node .ic{font-size:1.7rem;line-height:1}
+  .node h3{margin:10px 0 4px;font-size:1.05rem}
+  .node p{margin:0;color:var(--mut);font-size:.92rem}
+  .arrow{display:flex;align-items:center;justify-content:center;color:var(--blue);
+    font-size:1.6rem;padding:0 10px;flex:0 0 auto}
+  .node.keep{border-color:var(--green)}
+  .node .pill{position:absolute;top:-11px;left:16px;background:var(--green);color:#fff;
+    font-size:.72rem;font-weight:700;padding:3px 9px;border-radius:999px}
+  @media (max-width:680px){
+    .flow{flex-direction:column}
+    .arrow{transform:rotate(90deg);padding:6px 0}
+    .node{flex:1 1 auto}
+  }
+
+  /* does / doesn't */
+  .cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:680px){.cols{grid-template-columns:1fr}}
+  .col{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow)}
+  .col h3{margin:0 0 10px;font-size:1.05rem}
+  .col.yes h3{color:var(--green)} .col.no h3{color:var(--red)}
+  .col ul{margin:0;padding-left:0;list-style:none}
+  .col li{padding:6px 0 6px 26px;position:relative;color:var(--ink)}
+  .col.yes li::before{content:"✓";position:absolute;left:0;color:var(--green);font-weight:700}
+  .col.no li::before{content:"✕";position:absolute;left:0;color:var(--red);font-weight:700}
+
+  /* key callout */
+  .key{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--green);
+    border-radius:12px;padding:20px 22px;box-shadow:var(--shadow)}
+  .key strong{color:var(--green)}
+
+  /* modes table */
+  table{width:100%;border-collapse:collapse;background:var(--panel);border:1px solid var(--line);
+    border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{background:rgba(21,101,192,.06);font-size:.9rem}
+  tr:last-child td{border-bottom:none}
+  .rec{color:var(--green);font-weight:700}
+
+  .steps{counter-reset:s;padding:0;margin:0;list-style:none}
+  .steps li{counter-increment:s;position:relative;padding:8px 0 8px 40px;color:var(--ink)}
+  .steps li::before{content:counter(s);position:absolute;left:0;top:6px;width:26px;height:26px;
+    background:var(--blue);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700}
+
+  footer{border-top:1px solid var(--line);padding:30px 0 60px;color:var(--mut);font-size:.9rem}
+  .note{color:var(--mut);font-size:.88rem}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>travel-bridge</h1>
+    <p class="tag">Use public, airport &amp; hotel WiFi on a <strong>filtered</strong> device —
+      without ever touching the filter.</p>
+    <div class="badges">
+      <span class="badge">Raspberry Pi</span>
+      <span class="badge">The filter stays 100% on</span>
+      <span class="badge">Windows companion app</span>
+      <span class="badge">Open source · MIT</span>
+    </div>
+    <a class="cta" href="https://github.com/mfvirtualmail-bot/travel-bridge">View the project on GitHub →</a>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>The problem</h2>
+    <p class="lead">Public WiFi almost always shows a <em>login page</em> first — a "captive
+      portal" where you accept terms or enter a room number before you get online.
+      A filtered device <strong>can't open that login page</strong>, so a filtered laptop or phone
+      simply can't get onto the WiFi. The person is left feeling the only way out is to remove
+      the filter — which it isn't.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>How it works</h2>
+    <p class="lead">A small, separate box — a Raspberry Pi with no screen and no keyboard — sits
+      between the public WiFi and your device. It handles the login page once, then shares the
+      connection over its own private WiFi.</p>
+
+    <div class="flow">
+      <div class="node">
+        <div class="ic">📶</div>
+        <h3>Public WiFi</h3>
+        <p>Airport / hotel / café — with a captive-portal login page.</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node">
+        <div class="ic">🍓</div>
+        <h3>Raspberry Pi (the bridge)</h3>
+        <p>Joins the WiFi and passes the login page <strong>once</strong>. A dumb pipe — like the
+          plane's own router. Nothing is browsed on it.</p>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node keep">
+        <span class="pill">FILTER STAYS ON</span>
+        <div class="ic">💻</div>
+        <h3>Your filtered device</h3>
+        <p>Connects only to the Pi's private hotspot. Never sees the portal. Fully filtered, exactly
+          as at home.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="key">
+      <p style="margin:0">The key point: <strong>the filter is never touched, never disabled — not
+      even for a second.</strong> The bridge deals only with the login page, which isn't content and
+      which a filter can't render anyway. Every byte your device requests still goes through your
+      filter (NetFree, TAG&nbsp;Lock, MB&nbsp;Smart, Gader, Gentech&nbsp;…) unchanged.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What it does &amp; doesn't do</h2>
+    <div class="cols">
+      <div class="col yes">
+        <h3>It does</h3>
+        <ul>
+          <li>Pass the WiFi <strong>login page</strong> for your device</li>
+          <li>Keep your device's filter filtering every byte</li>
+          <li>Work at airports, hotels and cafés</li>
+          <li>Run on cheap, off-the-shelf hardware</li>
+        </ul>
+      </div>
+      <div class="col no">
+        <h3>It does not</h3>
+        <ul>
+          <li>Disable, pause or weaken any filter</li>
+          <li>Act as a filter or replace one</li>
+          <li>Store, log or send your browsing anywhere</li>
+          <li>Let you browse on the Pi itself</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note" style="margin-top:16px">Because the bridge carries raw packets (it has to, for the
+      login page to work), it is a locked-down, non-browsable appliance — protected by a password, an
+      optional hidden network name, and an optional list of exactly which devices may connect. Whether
+      relying on such a separate bridge is appropriate is a question for a rav/posek; this page
+      describes precisely what it does so that question can be asked accurately.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>Two ways to build it</h2>
+    <p class="lead">The installer auto-detects your hardware and picks the right mode.</p>
+    <table>
+      <tr><th>Mode</th><th>Hardware</th><th>Reliability</th><th>Notes</th></tr>
+      <tr>
+        <td><span class="rec">Dual&nbsp;radio</span><br><span class="note">recommended</span></td>
+        <td>Built-in WiFi <strong>+ a USB WiFi dongle</strong></td>
+        <td>High</td>
+        <td>Built-in = hotspot, dongle = uplink. Any channel, more devices, full speed.</td>
+      </tr>
+      <tr>
+        <td>Single radio</td>
+        <td>Built-in WiFi only</td>
+        <td>Experimental</td>
+        <td>One chip does both jobs on the same channel; ~5 devices; some 5&nbsp;GHz networks can drop
+          the hotspot. Good for trying the idea.</td>
+      </tr>
+    </table>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <h2>Get started</h2>
+    <ol class="steps">
+      <li>Flash a Raspberry Pi with Raspberry Pi OS Bookworm (64-bit).</li>
+      <li>Copy the <code>pi/</code> folder over, set your hotspot name &amp; password in
+        <code>travel-bridge.conf</code>.</li>
+      <li>Run <code>sudo bash install.sh</code> — it configures everything.</li>
+      <li>Join a WiFi as the uplink, connect your device to the new hotspot, and browse.</li>
+    </ol>
+    <p style="margin-top:22px">
+      <a class="cta" href="https://github.com/mfvirtualmail-bot/travel-bridge">Full instructions &amp; source on GitHub →</a>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    travel-bridge · open source (MIT) · a network appliance, not a filter.
+    If you use it for compliance reasons, clear the approach with your own rav/posek first.
+  </div>
+</footer>
+
+</body>
+</html>
