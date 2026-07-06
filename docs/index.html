@@ -35,6 +35,13 @@
   h2{font-size:1.5rem;margin:0 0 6px;letter-spacing:-.3px}
   .lead{color:var(--mut);margin:0 0 26px;max-width:720px}
 
+  /* board illustration */
+  .board{display:flex;flex-direction:column;align-items:center;gap:12px;margin:0 auto 28px;
+    background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:26px 20px;
+    box-shadow:var(--shadow);max-width:560px}
+  .board svg{width:100%;max-width:420px;height:auto}
+  .board .cap{margin:0;color:var(--mut);font-size:.9rem;text-align:center}
+
   /* flow diagram */
   .flow{display:flex;align-items:stretch;gap:0;flex-wrap:wrap}
   .node{flex:1 1 220px;background:var(--panel);border:1px solid var(--line);border-radius:14px;
@@ -120,6 +127,57 @@
     <p class="lead">A small, separate box — a Raspberry Pi with no screen and no keyboard — sits
       between the public WiFi and your device. It handles the login page once, then shares the
       connection over its own private WiFi.</p>
+
+    <div class="board">
+      <svg viewBox="0 0 460 300" role="img" aria-label="Illustration of a Raspberry Pi single-board computer">
+        <!-- PCB -->
+        <rect x="20" y="46" width="420" height="208" rx="16" fill="#12894f"/>
+        <rect x="20" y="46" width="420" height="208" rx="16" fill="none" stroke="#0b6238" stroke-width="3"/>
+        <!-- mounting holes -->
+        <g fill="#0b6238"><circle cx="42" cy="68" r="7"/><circle cx="418" cy="68" r="7"/><circle cx="42" cy="232" r="7"/><circle cx="418" cy="232" r="7"/></g>
+        <g fill="#eaf7ef"><circle cx="42" cy="68" r="3"/><circle cx="418" cy="68" r="3"/><circle cx="42" cy="232" r="3"/><circle cx="418" cy="232" r="3"/></g>
+        <!-- 40-pin GPIO header -->
+        <rect x="72" y="54" width="300" height="26" rx="4" fill="#12161d"/>
+        <rect x="80" y="59" width="284" height="6" rx="3" fill="#f0c674"/>
+        <rect x="80" y="69" width="284" height="6" rx="3" fill="#f0c674"/>
+        <g fill="#12161d">
+          <rect x="94"  y="57" width="2" height="20"/><rect x="108" y="57" width="2" height="20"/><rect x="122" y="57" width="2" height="20"/>
+          <rect x="136" y="57" width="2" height="20"/><rect x="150" y="57" width="2" height="20"/><rect x="164" y="57" width="2" height="20"/>
+          <rect x="178" y="57" width="2" height="20"/><rect x="192" y="57" width="2" height="20"/><rect x="206" y="57" width="2" height="20"/>
+          <rect x="220" y="57" width="2" height="20"/><rect x="234" y="57" width="2" height="20"/><rect x="248" y="57" width="2" height="20"/>
+          <rect x="262" y="57" width="2" height="20"/><rect x="276" y="57" width="2" height="20"/><rect x="290" y="57" width="2" height="20"/>
+          <rect x="304" y="57" width="2" height="20"/><rect x="318" y="57" width="2" height="20"/><rect x="332" y="57" width="2" height="20"/><rect x="346" y="57" width="2" height="20"/>
+        </g>
+        <!-- main SoC -->
+        <rect x="150" y="122" width="88" height="88" rx="8" fill="#12161d"/>
+        <rect x="176" y="148" width="36" height="36" rx="3" fill="#39485a"/>
+        <!-- wireless chip + shield -->
+        <rect x="258" y="150" width="56" height="42" rx="6" fill="#12161d"/>
+        <rect x="266" y="158" width="40" height="26" rx="2" fill="none" stroke="#3a4757" stroke-width="2"/>
+        <!-- a few passives -->
+        <g fill="#c9a25a"><rect x="150" y="112" width="10" height="5"/><rect x="168" y="112" width="10" height="5"/><rect x="330" y="120" width="6" height="12"/><rect x="346" y="120" width="6" height="12"/></g>
+        <!-- USB / Ethernet ports (right edge) -->
+        <g fill="#c3cad4" stroke="#98a2b0" stroke-width="1.5">
+          <rect x="430" y="94"  width="26" height="36" rx="2"/>
+          <rect x="430" y="140" width="26" height="42" rx="2"/>
+        </g>
+        <!-- power + micro-HDMI (bottom edge) -->
+        <g fill="#c3cad4" stroke="#98a2b0" stroke-width="1.5">
+          <rect x="132" y="248" width="22" height="12" rx="2"/>
+          <rect x="176" y="248" width="30" height="12" rx="2"/>
+          <rect x="220" y="248" width="30" height="12" rx="2"/>
+        </g>
+        <!-- micro-SD slot (left edge) -->
+        <rect x="14" y="150" width="12" height="34" rx="2" fill="#2a3340"/>
+        <!-- raspberry mark -->
+        <g transform="translate(300,138)">
+          <ellipse cx="-7" cy="-19" rx="12" ry="7" fill="#3fae5a" transform="rotate(-35 -7 -19)"/>
+          <ellipse cx="7"  cy="-19" rx="12" ry="7" fill="#3fae5a" transform="rotate(35 7 -19)"/>
+          <g fill="#dd3b3b"><circle cx="0" cy="-4" r="7"/><circle cx="-9" cy="2" r="7"/><circle cx="9" cy="2" r="7"/><circle cx="-4" cy="10" r="7"/><circle cx="5" cy="10" r="7"/><circle cx="0" cy="17" r="6"/></g>
+        </g>
+      </svg>
+      <p class="cap">A Raspberry Pi — the entire bridge. No screen, no keyboard: it just plugs into power.</p>
+    </div>
 
     <div class="flow">
       <div class="node">
