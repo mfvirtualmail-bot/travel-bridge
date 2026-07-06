@@ -1,0 +1,7 @@
+# Shell scripts and Pi config must have LF endings or bash/hostapd choke
+*.sh            text eol=lf
+*.conf          text eol=lf
+*.conf.example  text eol=lf
+# Windows helpers keep CRLF
+*.ps1           text eol=crlf
+*.bat           text eol=crlf

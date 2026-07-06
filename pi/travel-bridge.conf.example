@@ -1,0 +1,29 @@
+# =============================================================================
+#  travel-bridge configuration
+# =============================================================================
+#  Copy this file to  travel-bridge.conf  and edit the values, then run
+#  install.sh (it reads travel-bridge.conf). At minimum, change AP_PASS.
+# =============================================================================
+
+# ---- Your private hotspot (the WiFi your filtered device connects to) -------
+AP_SSID="TravelBridge"              # the hotspot name your device will see
+AP_PASS="ChangeThisPassword"        # hotspot password, 8+ characters. CHANGE IT.
+AP_COUNTRY="US"                     # 2-letter WiFi country code (US, GB, BE, IL, ...)
+AP_CHANNEL=6                        # 2.4 GHz channel for the hotspot (1, 6 or 11 are best)
+
+# ---- Addressing (leave these unless they clash with something) --------------
+AP_IP="192.168.50.1"                # the Pi's address on the hotspot
+DHCP_START="192.168.50.50"          # first address handed to your devices
+DHCP_END="192.168.50.150"           # last address handed to your devices
+
+# ---- Lockdown (turn these on AFTER your first successful test) --------------
+AP_HIDDEN=0                         # 0 = SSID visible (easy first test), 1 = hidden
+MAC_ALLOWLIST=0                     # 0 = any device may join, 1 = only listed MACs
+                                    #   (list them in /etc/travel-bridge/allowed-macs)
+
+# ---- Radio mode -------------------------------------------------------------
+#  auto   = use two radios if a USB WiFi dongle is present (RECOMMENDED, reliable),
+#           otherwise fall back to single built-in radio (experimental).
+#  dual   = force two-radio mode (requires a USB WiFi dongle).
+#  single = force single built-in radio (AP+STA on one chip; experimental).
+FORCE_MODE="auto"

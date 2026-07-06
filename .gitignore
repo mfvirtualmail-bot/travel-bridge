@@ -1,0 +1,8 @@
+# Never commit a real, filled-in config (may hold your hotspot password)
+pi/travel-bridge.conf
+
+# Local / editor / OS cruft
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
