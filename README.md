@@ -61,7 +61,10 @@ for the plain-language explanation.
 ## Quick start (Windows companion app — optional)
 A small control panel so you don't have to type Linux commands: see status,
 scan for WiFi, and connect the Pi to a network from your laptop.
-Double-click **`windows/TravelBridge.bat`**. Details in
+
+**⬇️ [Download TravelBridge.zip](https://github.com/mfvirtualmail-bot/travel-bridge/releases/latest/download/TravelBridge.zip)** — unzip and double-click `TravelBridge.bat`. No install, no admin.
+
+(Or run it from source: `windows/TravelBridge.bat`.) Details in
 [windows/README.md](windows/README.md).
 
 ## At an airport / hotel
